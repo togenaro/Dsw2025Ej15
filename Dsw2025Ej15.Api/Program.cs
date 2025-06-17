@@ -1,7 +1,10 @@
 
 using Dsw2025Ej15.Application.Services;
 using Dsw2025Ej15.Data;
+using Dsw2025Ej15.Data.Helpers;
+using Dsw2025Ej15.Data.Repositories;
 using Dsw2025Ej15.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dsw2025Ej15.Api
 {
@@ -18,7 +21,15 @@ namespace Dsw2025Ej15.Api
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddHealthChecks();
-            builder.Services.AddSingleton<IRepository, InMemory>();
+            builder.Services.AddDbContext<Dsw2025Ej15Context>(options=>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025Ej15Entities"));
+                options.UseSeeding((c, t) =>
+                {
+                    ((Dsw2025Ej15Context)c).Seedwork();
+                });
+            });
+            builder.Services.AddScoped<IRepository, EfRepository>();
             builder.Services.AddTransient<ProductsManagementService>();
 
             var app = builder.Build();

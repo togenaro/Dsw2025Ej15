@@ -48,9 +48,9 @@ public class InMemory : IRepository
         return await Task.FromResult(GetSet<T>()?.FirstOrDefault(e=> e.Id == id));
     }
 
-    public async Task<List<T>?> GetAll<T>() where T : EntityBase
+    public async Task<IEnumerable<T>?> GetAll<T>() where T : EntityBase
     {
-        return await Task.FromResult(GetSet<T>()?.ToList());
+        return await Task.FromResult(GetSet<T>());
     }
 
     public async Task<T> Add<T>(T entity) where T : EntityBase

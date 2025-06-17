@@ -18,4 +18,5 @@ public class Product: EntityBase
     public string? Name { get; set; }
     public decimal CurrentUnitPrice { get; set; }
     public bool  IsActive { get; set; }
+    
 }
