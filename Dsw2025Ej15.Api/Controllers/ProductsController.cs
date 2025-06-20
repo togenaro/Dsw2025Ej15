@@ -1,7 +1,7 @@
 ﻿using Dsw2025Ej15.Application.Dtos;
-using Dsw2025Ej15.Application.Exceptions;
 using Dsw2025Ej15.Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using ApplicationException = Dsw2025Ej15.Application.Exceptions.ApplicationException;
 
 namespace Dsw2025Ej15.Api.Controllers;
 
@@ -44,7 +44,7 @@ public class ProductsController : ControllerBase
         {
             return BadRequest(ae.Message);
         }
-        catch(DuplicatedEntityException de)
+        catch(ApplicationException de)
         {
             return Conflict(de.Message);
         }

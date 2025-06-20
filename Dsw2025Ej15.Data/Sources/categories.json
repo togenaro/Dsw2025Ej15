@@ -1,0 +1,17 @@
+[
+  {
+    "id": "F1237C55-CFED-4309-99CE-1E22B5D9ABFF",
+    "name": "GOLOSINAS",
+    "isActive": true
+  },
+  {
+    "id": "1B9D49C3-0B73-423C-8D32-8B00E98BFEDF",
+    "name": "GALLETAS Y BUDINES",
+    "isActive": true
+  },
+  {
+    "id": "486A88CC-AC07-4D0D-906F-92CD38D8DBA8",
+    "name": "CEREALES",
+    "isActive": true
+  }
+]

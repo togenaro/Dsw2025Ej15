@@ -1,12 +1,7 @@
 ﻿using Dsw2025Ej15.Domain;
 using Dsw2025Ej15.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dsw2025Ej15.Data.Repositories;
 
@@ -19,33 +14,55 @@ public class EfRepository : IRepository
         _context = context;
     }
 
-    public Task<T> Add<T>(T entity) where T : EntityBase
+    public async Task<T> Add<T>(T entity) where T : EntityBase
     {
-        throw new NotImplementedException();
+        await _context.AddAsync(entity);
+        await _context.SaveChangesAsync();
+        return entity;
     }
 
-    public Task<T> Delete<T>(Guid id) where T : EntityBase
+    public async Task<T> Delete<T>(T entity) where T : EntityBase
     {
-        throw new NotImplementedException();
+        _context.Remove(entity);
+        await _context.SaveChangesAsync();
+        return entity;
     }
 
-    public Task<T?> First<T>(Expression<Func<T, bool>> predicate) where T : EntityBase
+    public async Task<T?> First<T>(Expression<Func<T, bool>> predicate, params string[] include) where T : EntityBase
     {
-        throw new NotImplementedException();
+        return await Include(_context.Set<T>(), include).FirstOrDefaultAsync(predicate);
     }
 
-    public async Task<IEnumerable<T>?> GetAll<T>() where T : EntityBase
+    public async Task<IEnumerable<T>?> GetAll<T>(params string[] include) where T : EntityBase
     {
-        return await Task.FromResult(_context.Set<T>());
+        return await Include(_context.Set<T>(), include).ToListAsync();
     }
 
-    public async Task<T?> GetById<T>(Guid id) where T : EntityBase
+    public async Task<T?> GetById<T>(Guid id, params string[] include) where T : EntityBase
     {
-       return await _context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+        return await Include(_context.Set<T>(), include).FirstOrDefaultAsync(e=> e.Id ==  id);
     }
 
-    public Task<T> Update<T>(T entity) where T : EntityBase
+    public async Task<IEnumerable<T>?> GetFiltered<T>(Expression<Func<T, bool>> predicate, params string[] include) where T : EntityBase
     {
-        throw new NotImplementedException();
+        return await Include(_context.Set<T>(), include).Where(predicate).ToListAsync();
+    }
+
+    public async Task<T> Update<T>(T entity) where T : EntityBase
+    {
+        _context.Update(entity);    
+        await _context.SaveChangesAsync();
+        return entity;
+    }
+
+    private static IQueryable<T> Include<T>(IQueryable<T> query, string[] includes) where T : EntityBase
+    {
+        var includedQuery = query;
+
+        foreach (var include in includes)
+        {
+            includedQuery = includedQuery.Include(include);
+        }
+        return includedQuery;
     }
 }

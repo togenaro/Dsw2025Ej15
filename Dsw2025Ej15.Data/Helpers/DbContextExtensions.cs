@@ -1,25 +1,19 @@
-﻿using Dsw2025Ej15.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Dsw2025Ej15.Data.Helpers;
 
 public static class DbContextExtensions
 {
-    public static void Seedwork(this Dsw2025Ej15Context context)
+    public static void Seedwork<T>(this Dsw2025Ej15Context context, string dataSource) where T : class
     {
-        if (context.Set<Product>().Any()) return;
-        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Sources\\products.json"));
-        var products = JsonSerializer.Deserialize<List<Product>>(json, new JsonSerializerOptions
+        if (context.Set<T>().Any()) return;
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, dataSource));
+        var entities = JsonSerializer.Deserialize<List<T>>(json, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
         });
-        if (products == null || products.Count == 0) return;
-        context.Set<Product>().AddRange(products);
+        if (entities == null || entities.Count == 0) return;
+        context.Set<T>().AddRange(entities);
         context.SaveChanges();
     }
 }

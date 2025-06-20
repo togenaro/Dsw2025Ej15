@@ -14,32 +14,38 @@ public class ProductsManagementService
         _repository = repository;
     }
 
-    public async Task<Product?> GetProductById(Guid id)
+    public async Task<ProductModel.Response?> GetProductById(Guid id)
     {
-        return await _repository.GetById<Product>(id);
+        var product = await _repository.GetById<Product>(id, nameof(Category));
+        return product != null ?
+            new ProductModel.Response(product.Id, product.Sku, product.Name, product.CurrentUnitPrice, product.Category?.Name) :
+            null;
     }
 
-    public async Task<List<Product>?> GetProducts()
+    public async Task<IEnumerable<ProductModel.Response>?> GetProducts()
     {
-        return (await _repository.GetAll<Product>())
-            ?.Where(p=> p.IsActive)
-            ?.ToList();
+        return (await _repository
+            .GetFiltered<Product>(p => p.IsActive, nameof(Category)))?
+            .Select(p => new ProductModel.Response(p.Id, p.Sku, p.Name, 
+            p.CurrentUnitPrice, p.Category?.Name));
     }
 
     public async Task<ProductModel.Response> AddProduct(ProductModel.Request request)
     {
         if (string.IsNullOrWhiteSpace(request.Sku) || 
             string.IsNullOrWhiteSpace(request.Name) ||
-            request.Price < 0)
+            request.Price < 0 || request.CategoryId == Guid.Empty
+            )
         {
             throw new ArgumentException("Valores para el producto no válidos");
         }
 
         var exist = await _repository.First<Product>(p => p.Sku == request.Sku);
         if (exist != null) throw new DuplicatedEntityException($"Ya existe un producto con el Sku {request.Sku}");
-
-        var product = new Product(request.Sku, request.Name, request.Price);
+        var category = await _repository.GetById<Category>(request.CategoryId) ?? throw new EntityNotFoundException($"La categoría o rubro indicado no existe");
+        var product = new Product(request.Sku, request.Name, request.Price, request.CategoryId);
         await _repository.Add(product);
-        return new ProductModel.Response(product.Id);
+        return new ProductModel.Response(product.Id, product.Sku, product.Name,
+            product.CurrentUnitPrice, product.Category?.Name);
     }
 }

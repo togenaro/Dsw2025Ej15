@@ -4,6 +4,7 @@ using Dsw2025Ej15.Data;
 using Dsw2025Ej15.Data.Helpers;
 using Dsw2025Ej15.Data.Repositories;
 using Dsw2025Ej15.Domain;
+using Dsw2025Ej15.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dsw2025Ej15.Api
@@ -26,7 +27,8 @@ namespace Dsw2025Ej15.Api
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025Ej15Entities"));
                 options.UseSeeding((c, t) =>
                 {
-                    ((Dsw2025Ej15Context)c).Seedwork();
+                    ((Dsw2025Ej15Context)c).Seedwork<Category>("Sources\\categories.json");
+                    ((Dsw2025Ej15Context)c).Seedwork<Product>("Sources\\products.json");
                 });
             });
             builder.Services.AddScoped<IRepository, EfRepository>();

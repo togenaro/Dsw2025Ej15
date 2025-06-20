@@ -1,10 +1,5 @@
 ﻿using Dsw2025Ej15.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dsw2025Ej15.Data;
 
@@ -19,12 +14,23 @@ public class Dsw2025Ej15Context: DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<Product>()
-            .ToTable("Products")
-            .Property(p=> p.Sku).HasMaxLength(20);
-        modelBuilder.Entity<Product>()
-            .Property(p => p.Name).HasMaxLength(60);
-        modelBuilder.Entity<Product>()
-            .Property(p => p.CurrentUnitPrice).HasPrecision(15, 2);
+        modelBuilder.Entity<Category>(eb =>
+        {
+            eb.ToTable("Categories");
+            eb.Property(p => p.Name)
+            .HasMaxLength(50)
+            .IsRequired();
+        });
+        modelBuilder.Entity<Product>(eb =>
+        {
+            eb.ToTable("Products");
+            eb.Property(p => p.Sku)
+            .HasMaxLength(20)
+            .IsRequired();
+            eb.Property(p => p.Name)
+            .HasMaxLength(60);
+            eb.Property(p => p.CurrentUnitPrice)
+            .HasPrecision(15, 2);
+        });
     }
 }

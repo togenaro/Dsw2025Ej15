@@ -6,17 +6,19 @@ public class Product: EntityBase
     {
         
     }
-    public Product(string sku, string name, decimal price)
+    public Product(string sku, string name, decimal price, Guid categoryId)
     {
         Sku = sku;
         Name = name;
         CurrentUnitPrice = price;
-        Id = Guid.NewGuid();
         IsActive = true;
+        CategoryId = categoryId;
     }
     public string? Sku { get; set; }
     public string? Name { get; set; }
     public decimal CurrentUnitPrice { get; set; }
     public bool  IsActive { get; set; }
-    
+
+    public Guid? CategoryId { get; set; }
+    public Category? Category { get; set; }
 }

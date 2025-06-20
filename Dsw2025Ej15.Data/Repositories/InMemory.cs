@@ -8,6 +8,7 @@ namespace Dsw2025Ej15.Data;
 public class InMemory : IRepository
 {
     private List<Product>? _products;
+    private List<Category>? _categories;
 
     public InMemory()
     {
@@ -16,7 +17,6 @@ public class InMemory : IRepository
 
     private void LoadProducts()
     {
-        
         var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Sources\\products.json"));
         _products = JsonSerializer.Deserialize<List<Product>>(json, new JsonSerializerOptions
         {
@@ -24,38 +24,29 @@ public class InMemory : IRepository
         });
     }
 
-    private List<T>? GetSet<T>() where T : EntityBase
+    private List<T>? GetList<T>() where T : EntityBase
     {
-        if(typeof(T) == typeof(Product))
+        return typeof(T).Name switch
         {
-            return _products as List<T>;
-        }
-        throw new NotSupportedException();
+            nameof(Product) => _products as List<T>,
+            nameof(Category) => _categories as List<T>,
+            _ => throw new NotSupportedException(),
+        };
     }
 
-    public List<Product>? GetProducts()
+    public async Task<T?> GetById<T>(Guid id, params string[] include) where T : EntityBase
     {
-        return _products?.Where(p => p.IsActive).ToList();
+        return await Task.FromResult(GetList<T>()?.FirstOrDefault(e => e.Id == id));
     }
 
-    public Product? GetProductById(Guid id)
+    public async Task<IEnumerable<T>?> GetAll<T>(params string[] include) where T : EntityBase
     {
-        return _products?.FirstOrDefault(p => p.Id == id);
-    }
-
-    public async Task<T?> GetById<T>(Guid id) where T : EntityBase
-    {
-        return await Task.FromResult(GetSet<T>()?.FirstOrDefault(e=> e.Id == id));
-    }
-
-    public async Task<IEnumerable<T>?> GetAll<T>() where T : EntityBase
-    {
-        return await Task.FromResult(GetSet<T>());
+        return await Task.FromResult(GetList<T>());
     }
 
     public async Task<T> Add<T>(T entity) where T : EntityBase
     {
-        GetSet<T>()?.Add(entity);
+        GetList<T>()?.Add(entity);
         return await Task.FromResult(entity);
     }
 
@@ -64,14 +55,20 @@ public class InMemory : IRepository
         throw new NotImplementedException();
     }
 
-    public Task<T> Delete<T>(Guid id) where T : EntityBase
+    public Task<T> Delete<T>(T entity) where T : EntityBase
     {
         throw new NotImplementedException();
     }
 
-    public async Task<T?> First<T>(Expression<Func<T, bool>> predicate) where T : EntityBase
+    public async Task<T?> First<T>(Expression<Func<T, bool>> predicate, params string[] include) where T : EntityBase
     {
-        var product = GetSet<T>()?.FirstOrDefault(predicate.Compile());
+        var product = GetList<T>()?.FirstOrDefault(predicate.Compile());
         return await Task.FromResult(product);
+    }
+
+    public async Task<IEnumerable<T>?> GetFiltered<T>(Expression<Func<T, bool>> predicate, params string[] include) where T : EntityBase
+    {
+        var products = GetList<T>()?.Where(predicate.Compile());
+        return await Task.FromResult(products);
     }
 }
