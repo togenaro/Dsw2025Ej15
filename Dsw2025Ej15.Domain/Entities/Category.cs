@@ -5,5 +5,5 @@ public class Category: EntityBase
     public string? Name { get; set; }
     public bool IsActive { get; set; }
 
-    public ICollection<Product> Products { get; } = new HashSet<Product>();
+    public ICollection<SubCategory> Products { get; } = new HashSet<SubCategory>();
 }

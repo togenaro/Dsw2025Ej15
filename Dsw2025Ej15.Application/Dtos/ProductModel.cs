@@ -2,7 +2,8 @@
 
 public record ProductModel
 {
-    public record Request(string Sku, string Name, decimal Price, Guid CategoryId);
+    public record Request(string Sku, string Name, decimal Price, Guid SubCategoryId);
 
-    public record Response(Guid Id, string? Sku, string? Name, decimal Price, string? Category);
+    public record Response(Guid Id, string? Sku, string? Name, decimal Price, 
+        string? SubCategory, string? Category);
 }

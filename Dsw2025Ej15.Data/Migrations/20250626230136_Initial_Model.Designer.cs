@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Dsw2025Ej15.Data.Migrations
 {
     [DbContext(typeof(Dsw2025Ej15Context))]
-    [Migration("20250620153443_Initial_Model")]
+    [Migration("20250626230136_Initial_Model")]
     partial class Initial_Model
     {
         /// <inheritdoc />
@@ -50,9 +50,6 @@ namespace Dsw2025Ej15.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<decimal>("CurrentUnitPrice")
                         .HasPrecision(15, 2)
                         .HasColumnType("decimal(15,2)");
@@ -69,14 +66,50 @@ namespace Dsw2025Ej15.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<Guid?>("SubCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("SubCategoryId");
 
                     b.ToTable("Products", (string)null);
                 });
 
+            modelBuilder.Entity("Dsw2025Ej15.Domain.Entities.SubCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("SubCategories", (string)null);
+                });
+
             modelBuilder.Entity("Dsw2025Ej15.Domain.Entities.Product", b =>
+                {
+                    b.HasOne("Dsw2025Ej15.Domain.Entities.SubCategory", "SubCategory")
+                        .WithMany("Products")
+                        .HasForeignKey("SubCategoryId");
+
+                    b.Navigation("SubCategory");
+                });
+
+            modelBuilder.Entity("Dsw2025Ej15.Domain.Entities.SubCategory", b =>
                 {
                     b.HasOne("Dsw2025Ej15.Domain.Entities.Category", "Category")
                         .WithMany("Products")
@@ -86,6 +119,11 @@ namespace Dsw2025Ej15.Data.Migrations
                 });
 
             modelBuilder.Entity("Dsw2025Ej15.Domain.Entities.Category", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Dsw2025Ej15.Domain.Entities.SubCategory", b =>
                 {
                     b.Navigation("Products");
                 });

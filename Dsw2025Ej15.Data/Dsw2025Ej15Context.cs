@@ -21,6 +21,13 @@ public class Dsw2025Ej15Context: DbContext
             .HasMaxLength(50)
             .IsRequired();
         });
+        modelBuilder.Entity<SubCategory>(eb =>
+        {
+            eb.ToTable("SubCategories");
+            eb.Property(p => p.Name)
+            .HasMaxLength(50)
+            .IsRequired();
+        });
         modelBuilder.Entity<Product>(eb =>
         {
             eb.ToTable("Products");

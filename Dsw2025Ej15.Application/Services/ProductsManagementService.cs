@@ -16,25 +16,26 @@ public class ProductsManagementService
 
     public async Task<ProductModel.Response?> GetProductById(Guid id)
     {
-        var product = await _repository.GetById<Product>(id, nameof(Category));
+        var product = await _repository.GetById<Product>(id);
         return product != null ?
-            new ProductModel.Response(product.Id, product.Sku, product.Name, product.CurrentUnitPrice, product.Category?.Name) :
+            new ProductModel.Response(product.Id, product.Sku, product.Name, product.CurrentUnitPrice, product.SubCategory?.Name, 
+            product.SubCategory?.Category?.Name) :
             null;
     }
 
     public async Task<IEnumerable<ProductModel.Response>?> GetProducts()
     {
         return (await _repository
-            .GetFiltered<Product>(p => p.IsActive, nameof(Category)))?
+            .GetFiltered<Product>(p => p.IsActive, "SubCategory.Category"))?
             .Select(p => new ProductModel.Response(p.Id, p.Sku, p.Name, 
-            p.CurrentUnitPrice, p.Category?.Name));
+            p.CurrentUnitPrice, p.SubCategory?.Name, p.SubCategory?.Category?.Name));
     }
 
     public async Task<ProductModel.Response> AddProduct(ProductModel.Request request)
     {
         if (string.IsNullOrWhiteSpace(request.Sku) || 
             string.IsNullOrWhiteSpace(request.Name) ||
-            request.Price < 0 || request.CategoryId == Guid.Empty
+            request.Price < 0 || request.SubCategoryId == Guid.Empty
             )
         {
             throw new ArgumentException("Valores para el producto no válidos");
@@ -42,10 +43,10 @@ public class ProductsManagementService
 
         var exist = await _repository.First<Product>(p => p.Sku == request.Sku);
         if (exist != null) throw new DuplicatedEntityException($"Ya existe un producto con el Sku {request.Sku}");
-        var category = await _repository.GetById<Category>(request.CategoryId) ?? throw new EntityNotFoundException($"La categoría o rubro indicado no existe");
-        var product = new Product(request.Sku, request.Name, request.Price, request.CategoryId);
+        var category = await _repository.GetById<SubCategory>(request.SubCategoryId) ?? throw new EntityNotFoundException($"La categoría o rubro indicado no existe");
+        var product = new Product(request.Sku, request.Name, request.Price, request.SubCategoryId);
         await _repository.Add(product);
         return new ProductModel.Response(product.Id, product.Sku, product.Name,
-            product.CurrentUnitPrice, product.Category?.Name);
+            product.CurrentUnitPrice, product.SubCategory?.Name, product.SubCategory?.Category?.Name);
     }
 }

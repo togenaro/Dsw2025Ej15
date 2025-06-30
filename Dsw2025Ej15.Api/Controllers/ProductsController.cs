@@ -17,7 +17,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet()]
-    public async Task<IActionResult> GetProducts()
+    public async Task<IActionResult> GetProducts([FromQuery]string? name)
     {
         var products = await _service.GetProducts();
         if (products == null || !products.Any()) return NoContent();
