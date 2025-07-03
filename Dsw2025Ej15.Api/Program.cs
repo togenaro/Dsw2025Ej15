@@ -7,7 +7,9 @@ using Dsw2025Ej15.Data.Repositories;
 using Dsw2025Ej15.Domain;
 using Dsw2025Ej15.Domain.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -78,6 +80,20 @@ namespace Dsw2025Ej15.Api
                 });
                       
             builder.Services.AddDomainServices(builder.Configuration);
+            builder.Services.AddDbContext<AuthenticateContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025Ej15Entities"));
+            });
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options=>
+            {
+                options.Password = new PasswordOptions
+                {
+                    RequiredLength = 8
+                };
+            })
+                .AddEntityFrameworkStores<AuthenticateContext>()
+                .AddDefaultTokenProviders();
+
             builder.Services.AddSingleton<JwtTokenService>();
 
             var app = builder.Build();
@@ -90,7 +106,8 @@ namespace Dsw2025Ej15.Api
             }
 
             app.UseHttpsRedirection();
-
+            
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

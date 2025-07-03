@@ -1,7 +1,9 @@
 ﻿using Dsw2025Ej15.Application.Dtos;
 using Dsw2025Ej15.Application.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Dsw2025Ej15.Api.Controllers;
 
@@ -9,22 +11,49 @@ namespace Dsw2025Ej15.Api.Controllers;
 [Route("api/auth")]
 public class AuthenticateController : ControllerBase
 {
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly SignInManager<IdentityUser> _signInManager;
     private readonly JwtTokenService _jwtTokenService;
 
-    public AuthenticateController(JwtTokenService jwtTokenService)
+    public AuthenticateController(UserManager<IdentityUser> userManager,
+        SignInManager<IdentityUser> signInManager,
+        JwtTokenService jwtTokenService)
     {
+        _userManager = userManager;
+        _signInManager = signInManager;
         _jwtTokenService = jwtTokenService;
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginModel request)
+    public async Task<IActionResult> Login([FromBody] LoginModel request)
     {
-        // Aquí deberías validar el usuario y contraseña contra tu base de datos o sistema de usuarios
-        if (request.Username == "admin" && request.Password == "123456") // Ejemplo simple
-        {
-            var token = _jwtTokenService.GenerateToken(request.Username, "tester");
-            return Ok(new { token });
+        var user =  await _userManager.FindByNameAsync(request.Username);
+        if (user == null) {
+            return Unauthorized("Usuario o contraseña incorrectos");
         }
-        return Unauthorized();
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+        if (!result.Succeeded)
+        {
+            return Unauthorized("Usuario o contraseña incorrectos");
+        }
+
+        var token = _jwtTokenService.GenerateToken(request.Username, "tester");
+        return Ok(new { token });
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterModel model)
+    {
+
+
+        var user = new IdentityUser { UserName = model.Username, Email = model.Email };
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        // Opcional: enviar email de confirmación, etc.
+        return Ok("Usuario registrado correctamente.");
     }
 }
