@@ -8,7 +8,9 @@ using Dsw2025Ej15.Domain;
 using Dsw2025Ej15.Domain.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 namespace Dsw2025Ej15.Api
 {
@@ -53,10 +55,30 @@ namespace Dsw2025Ej15.Api
                 });
             });
             builder.Services.AddHealthChecks();
-            builder.Services.AddAuthentication()
-                .AddJwtBearer();
+            var jwtConfig = builder.Configuration.GetSection("Jwt");
+            var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("JWT Key");
+            var key = Encoding.UTF8.GetBytes(keyText);
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtConfig["Issuer"],
+                        ValidAudience = jwtConfig["Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(key)
+                    };
+                });
                       
             builder.Services.AddDomainServices(builder.Configuration);
+            builder.Services.AddSingleton<JwtTokenService>();
 
             var app = builder.Build();
 
