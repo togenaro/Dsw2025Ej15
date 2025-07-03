@@ -19,7 +19,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet()]
-    [Authorize(Roles ="tester")]
+    //[Authorize(Roles ="tester")]
     public async Task<IActionResult> GetProducts([FromQuery]string? name)
     {
         var products = await _service.GetProducts();

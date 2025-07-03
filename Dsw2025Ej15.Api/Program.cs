@@ -57,6 +57,16 @@ namespace Dsw2025Ej15.Api
                 });
             });
             builder.Services.AddHealthChecks();
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            {
+                options.Password = new PasswordOptions
+                {
+                    RequiredLength = 8
+                };
+
+            })
+               .AddEntityFrameworkStores<AuthenticateContext>()
+               .AddDefaultTokenProviders();
             var jwtConfig = builder.Configuration.GetSection("Jwt");
             var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("JWT Key");
             var key = Encoding.UTF8.GetBytes(keyText);
@@ -84,17 +94,18 @@ namespace Dsw2025Ej15.Api
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025Ej15Entities"));
             });
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options=>
-            {
-                options.Password = new PasswordOptions
-                {
-                    RequiredLength = 8
-                };
-            })
-                .AddEntityFrameworkStores<AuthenticateContext>()
-                .AddDefaultTokenProviders();
+           
 
             builder.Services.AddSingleton<JwtTokenService>();
+            builder.Services.AddAuthorization();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("PermitirFrontend", policy =>
+                    policy.WithOrigins("http://localhost:3000")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod());
+            });
+
 
             var app = builder.Build();
 
@@ -106,7 +117,9 @@ namespace Dsw2025Ej15.Api
             }
 
             app.UseHttpsRedirection();
-            
+
+            app.UseCors("PermitirFrontend");
+
             app.UseAuthentication();
             app.UseAuthorization();
 
